@@ -1,0 +1,467 @@
+[1mdiff --git a/README.md b/README.md[m
+[1mindex 322327e..1a4c26b 100644[m
+[1m--- a/README.md[m
+[1m+++ b/README.md[m
+[36m@@ -64,4 +64,3 @@[m [m## Security Vulnerabilities[m
+ ## License[m
+ [m
+ The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).[m
+[31m-"# AgroPlanner" [m
+[1mdiff --git a/app/Http/Controllers/AdminController.php b/app/Http/Controllers/AdminController.php[m
+[1mindex 9b45afb..40facdc 100644[m
+[1m--- a/app/Http/Controllers/AdminController.php[m
+[1m+++ b/app/Http/Controllers/AdminController.php[m
+[36m@@ -4,13 +4,8 @@[m
+ [m
+ use Illuminate\Http\Request;[m
+ use App\Models\Category;[m
+[31m-[m
+[31m-use App\Models\Order;[m
+[31m-[m
+ use App\Models\Product;[m
+ [m
+[31m-[m
+[31m-[m
+ class AdminController extends Controller[m
+ {[m
+     // View all categories[m
+[36m@@ -73,13 +68,9 @@[m [mpublic function upload_product(Request $request)[m
+ [m
+         if ($request->hasFile('image')) {[m
+             $image = $request->file('image');[m
+[31m-            //$imageName = time() . '.' . $image->getClientOriginalExtension();[m
+[31m-            //$image->move('products', $imageName);[m
+[31m-            $imagepath = $image->getRealPath();[m
+[31m-            $imageContent = file_get_contents($imagepath);[m
+[31m-            $base64Image = base64_encode($imageContent);           [m
+[31m-            [m
+[31m-            $product->image = $base64Image;[m
+[32m+[m[32m            $imageName = time() . '.' . $image->getClientOriginalExtension();[m
+[32m+[m[32m            $image->move('products', $imageName);[m
+[32m+[m[32m            $product->image = $imageName;[m
+         }[m
+ [m
+         $product->price = $request->price;[m
+[36m@@ -94,7 +85,7 @@[m [mpublic function upload_product(Request $request)[m
+     // View all products[m
+     public function view_product()[m
+     {[m
+[31m-        $products = Product::all(); // Fetch all products[m
+[32m+[m[32m        $products = Product::paginate(2); // Adjust pagination as needed[m
+         return view('admin.view_product', compact('products'));[m
+     }[m
+ [m
+[36m@@ -176,33 +167,4 @@[m [mpublic function product_search(Request $request)[m
+ [m
+     }[m
+ [m
+[31m-    public function view_orders()[m
+[31m-    {[m
+[31m-        $data=Order::all();[m
+[31m-        return view('admin.view_orders',compact('data'));[m
+[31m-    }[m
+[31m-[m
+[31m-[m
+[31m-    public function on_the_way($id)[m
+[31m-    {[m
+[31m-        $order = Order::findOrFail($id);[m
+[31m-        $order->status = 'On the way';[m
+[31m-        $order->save();[m
+[31m-[m
+[31m-        return redirect()->back()->with('success', 'Order status updated to "On the Way"');[m
+[31m-    }[m
+[31m-[m
+[31m-    public function delivered($id)[m
+[31m-    {[m
+[31m-        $order = Order::findOrFail($id);[m
+[31m-        $order->status = 'Delivered';[m
+[31m-        $order->save();[m
+[31m-[m
+[31m-        return redirect()->back()->with('success', 'Order status updated to "Delivered"');[m
+[31m-    }[m
+[31m-[m
+[31m-    [m
+[31m-[m
+[31m-[m
+[31m-[m
+ }[m
+[1mdiff --git a/app/Models/Order.php b/app/Models/Order.php[m
+[1mindex 0da4bd9..103c9ea 100644[m
+[1m--- a/app/Models/Order.php[m
+[1m+++ b/app/Models/Order.php[m
+[36m@@ -2,20 +2,9 @@[m
+ [m
+ namespace App\Models;[m
+ [m
+[31m-use Illuminate\Database\Eloquent\Factories\HasFactory;[m
+ use Illuminate\Database\Eloquent\Model;[m
+ [m
+ class Order extends Model[m
+ {[m
+[31m-    use HasFactory;[m
+[31m-    public function user()[m
+[31m-    {[m
+[31m-        return $this->hasOne('App\Models\User','id','user_id');[m
+[31m-    }[m
+[31m-[m
+[31m-    public function product()[m
+[31m-    {[m
+[31m-        return $this->hasOne('App\Models\Product','id','product_id');[m
+[31m-    }[m
+[31m-[m
+[32m+[m[32m    //[m
+ }[m
+[1mdiff --git a/database/migrations/2025_01_07_015650_add_payment_status_to_orders_table.php b/database/migrations/2025_01_07_015650_add_payment_status_to_orders_table.php[m
+[1mdeleted file mode 100644[m
+[1mindex 9b15e67..0000000[m
+[1m--- a/database/migrations/2025_01_07_015650_add_payment_status_to_orders_table.php[m
+[1m+++ /dev/null[m
+[36m@@ -1,28 +0,0 @@[m
+[31m-<?php[m
+[31m-[m
+[31m-use Illuminate\Database\Migrations\Migration;[m
+[31m-use Illuminate\Database\Schema\Blueprint;[m
+[31m-use Illuminate\Support\Facades\Schema;[m
+[31m-[m
+[31m-return new class extends Migration[m
+[31m-{[m
+[31m-    /**[m
+[31m-     * Run the migrations.[m
+[31m-     */[m
+[31m-    public function up(): void[m
+[31m-    {[m
+[31m-        Schema::table('orders', function (Blueprint $table) {[m
+[31m-            $table->string('payment_status')->after('product_id')->default('Cash on Delivery');[m
+[31m-        });[m
+[31m-    }[m
+[31m-[m
+[31m-    /**[m
+[31m-     * Reverse the migrations.[m
+[31m-     */[m
+[31m-    public function down(): void[m
+[31m-    {[m
+[31m-        Schema::table('orders', function (Blueprint $table) {[m
+[31m-            $table->dropColumn('payment_status');[m
+[31m-        });[m
+[31m-    }[m
+[31m-};[m
+[1mdiff --git a/resources/views/admin/order.blade.php b/resources/views/admin/order.blade.php[m
+[1mdeleted file mode 100644[m
+[1mindex ce6e7c7..0000000[m
+[1m--- a/resources/views/admin/order.blade.php[m
+[1m+++ /dev/null[m
+[36m@@ -1,57 +0,0 @@[m
+[31m-<!DOCTYPE html>[m
+[31m-<html>[m
+[31m-  <head> [m
+[31m-    @include('admin.css')[m
+[31m-  </head>[m
+[31m-  <body>[m
+[31m-    @include('admin.header')[m
+[31m-[m
+[31m-    @include('admin.sidebar')[m
+[31m-      <!-- Sidebar Navigation end-->[m
+[31m-      <div class="page-content">[m
+[31m-        <div class="page-header">[m
+[31m-          <div class="container-fluid">[m
+[31m-[m
+[31m-            <table>[m
+[31m-[m
+[31m-[m
+[31m-                <tr> [m
+[31m-                    <th>Customer name</th>[m
+[31m-                    <th>Address</th>[m
+[31m-                    <th>Phone</th>[m
+[31m-                    <th>Product title</th>[m
+[31m-                    <th>Price</th>[m
+[31m-                    <th>Image</th>[m
+[31m-                </tr>[m
+[31m-[m
+[31m-                <tr>[m
+[31m-[m
+[31m-                    <td>ABC</td>[m
+[31m-                    <td>ABC</td>[m
+[31m-                    <td>ABC</td>[m
+[31m-                    <td>ABC</td>[m
+[31m-                    <td>ABC</td>[m
+[31m-                    <td>ABC</td>[m
+[31m-[m
+[31m-[m
+[31m-[m
+[31m-                </tr>[m
+[31m-[m
+[31m-[m
+[31m-[m
+[31m-            </table>[m
+[31m-[m
+[31m-          </div>  [m
+[31m-      </div>[m
+[31m-    </div>[m
+[31m-    <!-- JavaScript files-->[m
+[31m-    <script src="admincss/vendor/jquery/jquery.min.js"></script>[m
+[31m-    <script src="admincss/vendor/popper.js/umd/popper.min.js"> </script>[m
+[31m-    <script src="admincss/vendor/bootstrap/js/bootstrap.min.js"></script>[m
+[31m-    <script src="admincss/vendor/jquery.cookie/jquery.cookie.js"> </script>[m
+[31m-    <script src="admincss/vendor/chart.js/Chart.min.js"></script>[m
+[31m-    <script src="admincss/vendor/jquery-validation/jquery.validate.min.js"></script>[m
+[31m-    <script src="admincss/js/charts-home.js"></script>[m
+[31m-    <script src="admincss/js/front.js"></script>[m
+[31m-  </body>[m
+[31m-</html>[m
+[1mdiff --git a/resources/views/admin/sidebar.blade.php b/resources/views/admin/sidebar.blade.php[m
+[1mindex e9977d8..b197ebc 100644[m
+[1m--- a/resources/views/admin/sidebar.blade.php[m
+[1m+++ b/resources/views/admin/sidebar.blade.php[m
+[36m@@ -21,11 +21,6 @@[m
+                     [m
+                   </ul>[m
+                 </li>[m
+[31m-[m
+[31m-                <li><a href="{{url('view_orders')}}"> [m
+[31m-                  <i class="icon-grid"></i>Orders</a>[m
+[31m-                </li>[m
+[31m-                [m
+                 [m
+         </ul>[m
+       </nav>[m
+\ No newline at end of file[m
+[1mdiff --git a/resources/views/admin/view_orders.blade.php b/resources/views/admin/view_orders.blade.php[m
+[1mdeleted file mode 100644[m
+[1mindex d5abf61..0000000[m
+[1m--- a/resources/views/admin/view_orders.blade.php[m
+[1m+++ /dev/null[m
+[36m@@ -1,115 +0,0 @@[m
+[31m-<!DOCTYPE html>[m
+[31m-<html>[m
+[31m-  <head> [m
+[31m-    @include('admin.css')[m
+[31m-    <Style>[m
+[31m-[m
+[31m-        table[m
+[31m-        {[m
+[31m-            border: 2px solid skyblue;[m
+[31m-            text-align: center;[m
+[31m-[m
+[31m-        }[m
+[31m-        th [m
+[31m-        {[m
+[31m-            background-color: skyblue;[m
+[31m-            padding: 10px;[m
+[31m-            font-size: 18px;[m
+[31m-            font-weight: bold;[m
+[31m-            text-align: center;[m
+[31m-[m
+[31m-        }[m
+[31m-[m
+[31m-        td[m
+[31m-        {[m
+[31m-            color: white;[m
+[31m-            padding: 10px;[m
+[31m-            border: 1px solid skyblue;[m
+[31m-        }[m
+[31m-[m
+[31m-        .table_center[m
+[31m-        {[m
+[31m-            display: flex;[m
+[31m-            justify-content: center;[m
+[31m-            align-items: center;[m
+[31m-        }[m
+[31m-[m
+[31m-        [m
+[31m-[m
+[31m-[m
+[31m-[m
+[31m-[m
+[31m-    </Style>[m
+[31m-  </head>[m
+[31m-  <body>[m
+[31m-    @include('admin.header')[m
+[31m-[m
+[31m-    @include('admin.sidebar')[m
+[31m-      <!-- Sidebar Navigation end-->[m
+[31m-      <div class="page-content">[m
+[31m-        <div class="page-header">[m
+[31m-          <div class="container-fluid">[m
+[31m-    [m
+[31m-    <div class="table_center"> [m
+[31m-[m
+[31m-[m
+[31m-        <table>[m
+[31m-            <tr>[m
+[31m-                <th>Customer name</th>[m
+[31m-                <th>Address</th>[m
+[31m-                <th>Phone</th>[m
+[31m-                <th>Product Title</th>[m
+[31m-                <th>Price</th>[m
+[31m-                <th>Image</th>[m
+[31m-                <th>Status</th>[m
+[31m-                <th>Change Status</th>[m
+[31m-            </tr>[m
+[31m-[m
+[31m-            @foreach($data as $data)[m
+[31m-[m
+[31m-            <tr>[m
+[31m-                <td>{{$data->name}}</td>[m
+[31m-                <td>{{$data->rec_address}}</td>[m
+[31m-                <td>{{$data->phone}}</td>[m
+[31m-                <td>{{$data->product->title}}</td>[m
+[31m-                <td>{{$data->product->price}}</td>[m
+[31m-                <td>[m
+[31m-                <img width="150" src="products/{{$data->product->image}}">[m
+[31m-                </td>[m
+[31m-[m
+[31m-                <td>{{$data->status}}</td>[m
+[31m-[m
+[31m-                <td>[m
+[31m-                    <a class="btn btn-primary" href="{{ url('on_the_way', $data->id) }}">On the way</a>[m
+[31m-[m
+[31m-                    <a class="btn btn-success" href="{{ url('Delivered', $data->id) }}">Delivered</a>[m
+[31m-[m
+[31m-[m
+[31m-[m
+[31m-                </td>[m
+[31m-[m
+[31m-[m
+[31m-            </tr>[m
+[31m-            @endforeach[m
+[31m-[m
+[31m-[m
+[31m-[m
+[31m-[m
+[31m-        </table>[m
+[31m-[m
+[31m-[m
+[31m-[m
+[31m-          </div>  [m
+[31m-      </div>[m
+[31m-    </div>[m
+[31m-    <!-- JavaScript files-->[m
+[31m-    <script src="admincss/vendor/jquery/jquery.min.js"></script>[m
+[31m-    <script src="admincss/vendor/popper.js/umd/popper.min.js"> </script>[m
+[31m-    <script src="admincss/vendor/bootstrap/js/bootstrap.min.js"></script>[m
+[31m-    <script src="admincss/vendor/jquery.cookie/jquery.cookie.js"> </script>[m
+[31m-    <script src="admincss/vendor/chart.js/Chart.min.js"></script>[m
+[31m-    <script src="admincss/vendor/jquery-validation/jquery.validate.min.js"></script>[m
+[31m-    <script src="admincss/js/charts-home.js"></script>[m
+[31m-    <script src="admincss/js/front.js"></script>[m
+[31m-  </body>[m
+[31m-</html>[m
+[1mdiff --git a/resources/views/admin/view_product.blade.php b/resources/views/admin/view_product.blade.php[m
+[1mindex 41351c1..d69066c 100644[m
+[1m--- a/resources/views/admin/view_product.blade.php[m
+[1m+++ b/resources/views/admin/view_product.blade.php[m
+[36m@@ -52,45 +52,52 @@[m
+         <div class="page-header">[m
+           <div class="container-fluid">[m
+ [m
+[31m-          <form action="{{url('product_search')}}" method="get">[m
+[31m-            @csrf[m
+[31m-            <input type="search" name="search">[m
+[31m-            <input type="submit" class="btn btn-secondary" value="Search">[m
+[31m-          </form>[m
+[31m-[m
+[31m-          <div class="div_deg">[m
+[31m-            <table class="table_deg">[m
+[31m-              <tr>[m
+[31m-                <th>Product Title</th>[m
+[31m-                <th>Image</th>[m
+[31m-                <th>Price</th>[m
+[31m-                <th>Category</th>[m
+[31m-                <th>Quantity</th>[m
+[31m-                <th>Edit</th>[m
+[31m-                <th>Delete</th>[m
+[31m-              </tr>[m
+[31m-[m
+[31m-              @foreach($products as $item)[m
+[31m-              <tr>[m
+[31m-                  <td>{{ $item->title }}</td>[m
+[31m-                  <td>[m
+[31m-                    <img height="130" width="130" [m
+[31m-                     src="data:image/jpeg;base64,{{ $item->image }}">[m
+[31m-                  </td>[m
+[31m-                  <td>{{ $item->price }}</td>[m
+[31m-                  <td>{{ $item->category }}</td>[m
+[31m-                  <td>{{ $item->quantity }}</td>[m
+[31m-                  <td>[m
+[31m-                    <a class="btn btn-success" href="{{url('update_product',$item->id)}}">Edit</a>[m
+[31m-                  </td>[m
+[31m-                  <td>[m
+[31m-                    <a class="btn btn-danger" href="{{ url('/delete_product/' . $item->id) }}">Delete</a>[m
+[31m-                  </td>[m
+[31m-              </tr>[m
+[31m-              @endforeach[m
+[31m-            </table>[m
+[31m-          </div>[m
+[32m+[m[32m            <form action="{{url('product_search')}}" method="get">[m
+[32m+[m[32m                @csrf[m
+[32m+[m[32m                <input type="search" name="search">[m
+[32m+[m[32m                <input type="submit" class="btn btn-secondary" value="Search">[m
+[32m+[m[32m            </form>[m
+ [m
+[32m+[m[32m            <div class="div_deg">[m
+[32m+[m[32m                <table class="table_deg">[m
+[32m+[m[32m                    <tr>[m
+[32m+[m[32m                        <th>Product Title</th>[m
+[32m+[m[32m                        <th>Image</th>[m
+[32m+[m[32m                        <th>Price</th>[m
+[32m+[m[32m                        <th>Category</th>[m
+[32m+[m[32m                        <th>Quantity</th>[m
+[32m+[m[32m                        <th>Edit</th>[m
+[32m+[m[32m                        <th>Delete</th>[m
+[32m+[m[41m                        [m
+[32m+[m[41m                    [m
+[32m+[m[32m                    </tr>[m
+[32m+[m
+[32m+[m
+[32m+[m[32m                    @foreach($products as $item)[m
+[32m+[m[32m                    <tr>[m
+[32m+[m[32m                        <td>{{ $item->title }}</td>[m
+[32m+[m[32m                        <td><img height="130" width="130" src="products/{{ $item->image }}"></td>[m
+[32m+[m[32m                        <td>{{ $item->price }}</td>[m
+[32m+[m[32m                        <td>{{ $item->category }}</td>[m
+[32m+[m[32m                        <td>{{ $item->quantity }}</td>[m
+[32m+[m[41m                        [m
+[32m+[m[32m                        <td>[m
+[32m+[m[32m                          <a class="btn btn-success" href="{{url('update_product',$item->id)}}">Edit</a>[m
+[32m+[m[32m                        </td>[m
+[32m+[m
+[32m+[m[32m                        <td>[m
+[32m+[m[32m                          <a class="btn btn-danger" href="{{ url('/delete_product/' . $item->id) }}">Delete</a>[m
+[32m+[m[32m                        </td>[m
+[32m+[m
+[32m+[m[41m                        [m
+[32m+[m
+[32m+[m
+[32m+[m
+[32m+[m[32m                    </tr>[m
+[32m+[m[32m                    @endforeach[m
+[32m+[m[32m                </table>[m
+[32m+[m[41m              [m
+[32m+[m[32m            </div>[m
+ [m
+             <div class="div_deg">[m
+             {{$products->onEachSide(1)->links()}}[m
+[1mdiff --git a/routes/web.php b/routes/web.php[m
+[1mindex dc1f121..cda4031 100644[m
+[1m--- a/routes/web.php[m
+[1m+++ b/routes/web.php[m
+[36m@@ -1,7 +1,6 @@[m
+ <?php[m
+ [m
+ use App\Http\Controllers\ProfileController;[m
+[31m-use GuzzleHttp\Middleware;[m
+ use Illuminate\Support\Facades\Route;[m
+ use App\Http\Controllers\HomeController;[m
+ use App\Http\Controllers\AdminController;[m
+[36m@@ -50,9 +49,4 @@[m
+ [m
+ route::get('delete_cart/{id}', [HomeController::class, 'delete_cart'])->middleware(['auth','verified']);[m
+ [m
+[31m-route::post('confirm_order', [HomeController::class, 'confirm_order'])->middleware(['auth','verified']);[m
+[31m-[m
+[31m-route::get('view_orders', [AdminController::class, 'view_orders'])->name('view_orders');[m
+[31m-[m
+[31m-Route::get('on_the_way/{id}', [AdminController::class, 'on_the_way'])->middleware(['auth','admin']);[m
+[31m-Route::get('Delivered/{id}', [AdminController::class, 'delivered'])-> middleware(['auth','admin']);[m
+[32m+[m[32mroute::post('confirm_order', [HomeController::class, 'confirm_order'])->middleware(['auth','verified']);[m
+\ No newline at end of file[m
